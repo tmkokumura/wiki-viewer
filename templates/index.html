@@ -7,7 +7,7 @@
     <script type="text/javascript">
         $(function() {
             $("#search_button").click(function(){
-                $('svg').empty();
+                reset();
                 $.post("search",
                     {
                         "disp_count": $('#disp_count').val(),
@@ -20,8 +20,18 @@
             });
         });
 
+        function reset() {
+            $('svg').empty();
+            $('#msg').empty();
+        }
+
         function view(graph) {
-            var width = 960;
+            if(graph.error) {
+                $('#msg').text(graph.error);
+                exit();
+            }
+
+            var width = 800;
             var height = 600;
 
             var svg = d3.select("svg")
@@ -121,7 +131,7 @@
         }
 
         .canvas {
-            width: 960px;
+            width: 800px;
             height: 600px;
             margin-top: 10px;
             background-color: #eee;
@@ -150,6 +160,10 @@
         .disp_count {
             width: 3em;
         }
+
+        .msg {
+            color: #f00;
+        }
     </style>
 </head>
 <body>
@@ -161,6 +175,7 @@
         <input type="text" id="keyword" size="30" placeholder="検索ワード">
         <input type="button" id="search_button" value="Search">
     </p>
+    <p class="msg" id="msg"></p>
     <svg class="canvas" xmlns="http://www.w3.org/2000/svg"></svg>
 
 </body>

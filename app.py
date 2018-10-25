@@ -38,6 +38,9 @@ def search():
         # 本文を取得する
         content = get_content(res_body)
 
+        if content is None:
+            return make_response(jsonify({"error": "お探しのwikipediaページは存在しません。"}))
+
         # 本文からリンク文字列の一覧を取得する
         word_list = get_word_list(content)
 
@@ -59,7 +62,8 @@ def search():
         return make_response(jsonify(chart_data))
 
     else:
-        return make_response(jsonify({"error": "error"}))
+        app.logger.error("APIレスポンスコード: {}".format(res_code))
+        return make_response(jsonify({"error": "システムエラー発生しました。"}))
 
 
 def search_wiki(keyword):
@@ -85,7 +89,7 @@ def search_wiki(keyword):
     res_body = json.loads(res.text)
 
     app.logger.debug("res_code: {}".format(res_code))
-    # app.logger.debug("res_body: {}".format(res_body))
+    app.logger.debug("res_body: {}".format(res_body))
 
     return res_code, res_body
 
@@ -98,8 +102,12 @@ def get_content(res_body):
     """
     pages = res_body['query']['pages']
     page_body = list(pages.values())[0]
-    content = page_body['revisions'][0]['*']
-    return content
+
+    if 'revisions' in page_body.keys():
+        content = page_body['revisions'][0]['*']
+        return content
+    else:
+        None
 
 
 def get_word_list(content):
@@ -143,7 +151,7 @@ def get_word_weight(content, word_list):
     # 出現数をカウントする
     for word in word_list:
         word_weight_dict[word] = float(content.count(word))
-        app.logger.debug("word count: {}, {}".format(word, word_weight_dict[word]))
+        # app.logger.debug("word count: {}, {}".format(word, word_weight_dict[word]))
 
     return word_weight_dict
 
@@ -161,7 +169,7 @@ def normalize_weight(word_weight_dict):
     norm_word_weight_dict = {}
     for word, weight in word_weight_dict.items():
         norm_word_weight_dict[word] = (weight - weight_min) / (weight_max - weight_min)
-        app.logger.debug("norm_weight: {}, {}".format(word, norm_word_weight_dict[word]))
+        # app.logger.debug("norm_weight: {}, {}".format(word, norm_word_weight_dict[word]))
 
     return norm_word_weight_dict
 
