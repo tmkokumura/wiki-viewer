@@ -41,7 +41,7 @@
             var simulation = d3.forceSimulation()
                 .force("link", d3.forceLink()
                     .id(function(d) { return d.id; })
-                    .distance(function(d) { return (1 - d.weight) * 100 + 100; }))
+                    .distance(function(d) { return (1 - d.weight) * 150 + 50; }))
                 .force("charge", d3.forceManyBody())
                 .force("center", d3.forceCenter(width / 2, height / 2));
 
@@ -169,7 +169,7 @@
 <body>
     <h1>ウィキ ノード</h1>
     <p>
-        表示するノードの数: <input type="number" class="disp_count" id="disp_count" min="1" max="99" value="10">
+        表示するノードの数: <input type="number" class="disp_count" id="disp_count" min="1" max="99" value="25">
     </p>
     <p>
         <input type="text" id="keyword" size="30" placeholder="検索ワード">
