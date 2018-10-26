@@ -41,7 +41,7 @@
             var simulation = d3.forceSimulation()
                 .force("link", d3.forceLink()
                     .id(function(d) { return d.id; })
-                    .distance(function(d) { return (1 - d.weight) * 150 + 50; }))
+                    .distance(function(d) { return d.distance * 150 + 50; }))
                 .force("charge", d3.forceManyBody())
                 .force("center", d3.forceCenter(width / 2, height / 2));
 
@@ -60,7 +60,7 @@
                 .selectAll("circle")
                 .data(graph.nodes)
                 .enter().append("circle")
-                    .attr("r", 20)
+                    .attr("r", function(d){return d.size * 20 + 10})
                     .call(d3.drag()
                         .on("start", dragstarted)
                         .on("drag", dragged)
