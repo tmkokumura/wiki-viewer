@@ -107,10 +107,13 @@ def display_category():
         app.logger.error("APIレスポンスコード: {}".format(res_code))
         return make_response(jsonify({"error": "システムエラー発生しました。"}))
 
-    app.logger.info('--- End [display_category] ---')
-
     categories = get_category_list(res_body)
+
+    res_code, res_body = get_category_members(categories)
+
     chart_data = build_category_chart_data(keyword, categories)
+
+    app.logger.info('--- End [display_category] ---')
 
     return make_response(jsonify(chart_data))
 
@@ -129,17 +132,7 @@ def get_full_article(keyword):
         "titles": keyword
     }
 
-    app.logger.debug("base_url: {}".format(BASE_URL))
-    app.logger.debug("url_params: {}".format(url_params))
-
-    res = requests.get(BASE_URL, params=url_params)
-    res_code = res.status_code
-    res_body = json.loads(res.text)
-
-    app.logger.debug("res_code: {}".format(res_code))
-    app.logger.debug("res_body: {}".format(res_body))
-
-    return res_code, res_body
+    return execute_api(url_params)
 
 
 def get_article_info(word_list):
@@ -156,17 +149,7 @@ def get_article_info(word_list):
         "titles": format_titles(word_list)
     }
 
-    app.logger.debug("base_url: {}".format(BASE_URL))
-    app.logger.debug("url_params: {}".format(url_params))
-
-    res = requests.get(BASE_URL, params=url_params)
-    res_code = res.status_code
-    res_body = json.loads(res.text)
-
-    app.logger.debug("res_code: {}".format(res_code))
-    app.logger.debug("res_body: {}".format(res_body))
-
-    return res_code, res_body
+    return execute_api(url_params)
 
 
 def get_word_size(res_body):
@@ -318,17 +301,7 @@ def get_categories(keyword):
         "titles": keyword
     }
 
-    app.logger.debug("base_url: {}".format(BASE_URL))
-    app.logger.debug("url_params: {}".format(url_params))
-
-    res = requests.get(BASE_URL, params=url_params)
-    res_code = res.status_code
-    res_body = json.loads(res.text)
-
-    app.logger.debug("res_code: {}".format(res_code))
-    app.logger.debug("res_body: {}".format(res_body))
-
-    return res_code, res_body
+    return execute_api(url_params)
 
 
 def get_category_list(res_body):
@@ -388,6 +361,55 @@ def build_category_chart_data(keyword, categories):
     children = [{'name': x} for x in categories]
     chart_data = {'name': keyword, 'children': children}
     return chart_data
+
+
+def get_category_members(categories):
+    """
+    Wikipediaのカテゴリ記事一覧を取得する
+    :param categories:
+    :return:
+    """
+    category_strs = ['Category:' + x for x in categories]
+    query_cateogries = format_titles(category_strs)
+
+    url_params = {
+        "format": "json",
+        "action": "query",
+        "list": "categorymembers",
+        "cmtitle": query_cateogries
+    }
+
+    return execute_api(url_params)
+
+
+def get_category_member_dict(res_body):
+    """
+    APIレスポンスボディからカテゴリ記事ディクショナリを取得する
+    :param res_body: APIレスポンスボディ
+    :return: 本文
+    """
+    page = list(res_body['query']['pages'].values())[0]
+    categories_node = page['categories']
+    categories = [x['title'].strip('Category:') for x in categories_node]
+
+
+def execute_api(url_params):
+    """
+    wikipedia apiを呼び出す
+    :param url_params:
+    :return: response
+    """
+    app.logger.debug("base_url: {}".format(BASE_URL))
+    app.logger.debug("url_params: {}".format(url_params))
+
+    res = requests.get(BASE_URL, params=url_params)
+    res_code = res.status_code
+    res_body = json.loads(res.text)
+
+    app.logger.debug("res_code: {}".format(res_code))
+    app.logger.debug("res_body: {}".format(res_body))
+
+    return res_code, res_body
 
 
 if __name__ == '__main__':

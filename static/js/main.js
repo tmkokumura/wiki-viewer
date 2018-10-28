@@ -57,7 +57,7 @@ function display_link(graph) {
     var simulation = d3.forceSimulation()
         .force("link", d3.forceLink()
             .id(function(d) { return d.id; })
-            .distance(function(d) { return d.distance * 150 + 50; }))
+            .distance(function(d) { return d.distance * (height / 4) + (height / 10); }))
         .force("charge", d3.forceManyBody())
         .force("center", d3.forceCenter(width / 2, height / 2));
 
@@ -150,8 +150,8 @@ function display_category(data) {
         return;
     }
 
-    var width = $('svg').width();
-    var height = $('svg').height();
+    var width = $('#canvas_category').width();
+    var height = $('#canvas_category').height();
 
     var root = d3.hierarchy(data);
 
@@ -161,33 +161,39 @@ function display_category(data) {
     tree(root);
 
     // 4. svg要素の配置
-  g = d3.select("#canvas_category").append("g").attr("transform", "translate(80,0)");
-  var link = g.selectAll(".tree_link")
-    .data(root.descendants().slice(1))
-    .enter()
-    .append("path")
-    .attr("class", "tree_link")
-    .attr("d", function(d) {
-      return "M" + d.parent.y + "," + d.parent.x +
-        "C" + ((d.parent.y + d.y)/2) + "," + d.parent.x +
-        " " + ((d.parent.y + d.y)/2) + "," + d.x +
-        " " + d.y + "," + d.x;
-    });
+    var g = d3.select("#canvas_category").append("g").attr("transform", "translate(80,0)");
+    var link = g.selectAll(".tree_link")
+        .data(root.descendants().slice(1))
+        .enter()
+        .append("path")
+        .attr("class", "tree_link")
+        .attr("d", function(d) {
+            return "M" + d.parent.y + "," + d.parent.x +
+            "C" + ((d.parent.y + d.y)/2) + "," + d.parent.x +
+            " " + ((d.parent.y + d.y)/2) + "," + d.x +
+            " " + d.y + "," + d.x;
+        });
 
     var node = g.selectAll(".tree_node")
-    .data(root.descendants())
-    .enter()
-    .append("g")
-    .attr("class", "tree_node")
-    .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; })
+        .data(root.descendants())
+        .enter()
+        .append("g")
+        .attr("class", "tree_node")
+        .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; })
 
-  node.append("circle")
-    .attr("r", 8)
-    .attr("fill", "#999");
+    node.append("circle")
+        .attr("r", 8)
+        .attr("fill", "#999");
 
-  node.append("text")
-    .attr("dy", 3)
-    .attr("x", function(d) { return d.children ? -12 : 12; })
-    .style("text-anchor", function(d) { return d.children ? "end" : "start"; })
-    .text(function(d) { return d.data.name; });
+    node.append("a")
+        .attr("xlink:href", function (d) { return "https://ja.wikipedia.org/wiki/Category:" + d.data.name; })
+        .attr("target", "_blank")
+        .attr("class", "tree_a")
+
+    d3.selectAll(".tree_a")
+        .append("text")
+        .attr("dy", 3)
+        .attr("x", function(d) { return d.children ? -12 : 12; })
+        .style("text-anchor", function(d) { return d.children ? "end" : "start"; })
+        .text(function(d) { return d.data.name; });
 }
