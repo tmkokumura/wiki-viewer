@@ -1,35 +1,58 @@
+/***********************
+ * Ajaxイベント
+ ***********************/
 $(function() {
-    $("#search_button").click(function(){
+    /* リンクノードの表示ボタン押下時 */
+    $("#btn_link").click(function(){
         reset();
-        $.post("search",
+        $.post("link",
             {
-                "disp_count": $('#disp_count').val(),
-                "keyword": $('#keyword').val()
+                "max-nodes": $('#max-nodes').val(),
+                "keyword": $('#keyword-link').val()
             },
             function(j_data){
-                view(j_data);
+                display_link(j_data);
+            }
+        );
+    });
+
+    /* カテゴリツリーの表示ボタン押下時 */
+    $("#btn_category").click(function(){
+        reset();
+        $.post("category",
+            {
+                "keyword": $('#keyword-category').val()
+            },
+            function(j_data){
+                display_category(j_data);
             }
         );
     });
 });
 
+/***********************
+ * 初期化関数
+ ***********************/
 function reset() {
-    $('svg').empty();
-    $('#msg').empty();
+    $('#canvas_link').empty();
+    $('#canvas_category').empty();
+    $('#msg_link').empty();
+    $('#msg_category').empty();
 }
 
-function view(graph) {
+/***************************
+ * リンクノードの描画
+ ***************************/
+function display_link(graph) {
     if(graph.error) {
-        $('#msg').text(graph.error);
-        exit();
+        $('#msg_link').text(graph.error);
+        return;
     }
 
-    var width = 800;
-    var height = 600;
+    var width = $('#canvas_link').width();
+    var height = $('#canvas_link').height();
 
-    var svg = d3.select("svg")
-        .attr("width", width)
-        .attr("height", height);
+    var svg = d3.select("#canvas_link");
 
     var simulation = d3.forceSimulation()
         .force("link", d3.forceLink()
@@ -115,4 +138,56 @@ function view(graph) {
         d.fx = null;
         d.fy = null;
     }
+
+}
+
+/***************************
+ * カテゴリツリーの描画
+ ***************************/
+function display_category(data) {
+    if(data.error) {
+        $('#msg_category').text(graph.error);
+        return;
+    }
+
+    var width = $('svg').width();
+    var height = $('svg').height();
+
+    var root = d3.hierarchy(data);
+
+    var tree = d3.tree()
+        .size([400,400]) // .size()でツリー全体のサイズを決める。
+
+    tree(root);
+
+    // 4. svg要素の配置
+  g = d3.select("#canvas_category").append("g").attr("transform", "translate(80,0)");
+  var link = g.selectAll(".tree_link")
+    .data(root.descendants().slice(1))
+    .enter()
+    .append("path")
+    .attr("class", "tree_link")
+    .attr("d", function(d) {
+      return "M" + d.parent.y + "," + d.parent.x +
+        "C" + ((d.parent.y + d.y)/2) + "," + d.parent.x +
+        " " + ((d.parent.y + d.y)/2) + "," + d.x +
+        " " + d.y + "," + d.x;
+    });
+
+    var node = g.selectAll(".tree_node")
+    .data(root.descendants())
+    .enter()
+    .append("g")
+    .attr("class", "tree_node")
+    .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; })
+
+  node.append("circle")
+    .attr("r", 8)
+    .attr("fill", "#999");
+
+  node.append("text")
+    .attr("dy", 3)
+    .attr("x", function(d) { return d.children ? -12 : 12; })
+    .style("text-anchor", function(d) { return d.children ? "end" : "start"; })
+    .text(function(d) { return d.data.name; });
 }

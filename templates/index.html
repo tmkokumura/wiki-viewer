@@ -32,22 +32,31 @@
 
         <!-- タブコンテンツ -->
         <div class="tab-content">
-            <!-- ノードタブ -->
+            <!-- リンクタブ -->
             <div id="tab1" class="tab-pane active">
                 <!-- 描画エリア -->
-                <svg class="canvas" xmlns="http://www.w3.org/2000/svg"></svg>
+                <svg id="canvas_link" class="canvas" xmlns="http://www.w3.org/2000/svg"></svg>
                 <!-- 検索エリア -->
                 <div class="search">
-                    <input type="text" id="keyword" class="search_item search_text" size="30" placeholder="キーワード">
+                    <input type="text" id="keyword-link" class="search_item search_text" size="30" placeholder="キーワード">
                     <div class="search_item">
-                        <label for="disp_count">ノードの数</label>
-                        <input type="number" class="search_text search_count" id="disp_count" min="1" max="99" value="25">
+                        <label for="max-nodes">ノードの数</label>
+                        <input type="number" class="search_text search_count" id="max-nodes" min="1" max="99" value="25">
                     </div>
-                    <input type="button" id="search_button" class="search_item search_btn" value="表 示">
-                    <div class="msg" id="msg"></div>
+                    <input type="button" id="btn_link" class="search_item search_btn" value="表 示">
+                    <div class="msg" id="msg_link"></div>
                 </div>
             </div>
+            <!-- カテゴリタブ -->
             <div id="tab2" class="tab-pane">
+                <!-- 描画エリア -->
+                <svg id="canvas_category" class="canvas" xmlns="http://www.w3.org/2000/svg"></svg>
+                <!-- 検索エリア -->
+                <div class="search">
+                    <input type="text" id="keyword-category" class="search_item search_text" size="30" placeholder="キーワード">
+                    <input type="button" id="btn_category" class="search_item search_btn" value="表 示">
+                    <div class="msg" id="msg_category"></div>
+                </div>
             </div>
         </div>
     </main>

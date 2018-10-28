@@ -22,18 +22,25 @@ def index():
     return render_template('index.html')
 
 
-@app.route('/search', methods=['POST'])
-def search():
+@app.route('/link', methods=['POST'])
+def display_link():
     """
-    Searchボタン押下時（ajax呼び出し想定）
+    リンクノード表示（ajax呼び出し想定）
     :return: チャート表示用jsonデータ
     """
-    disp_count = int(request.form['disp_count'])
+
+    app.logger.info('--- Start [display_link] ---')
+
+    max_nodes = int(request.form['max-nodes'])
     keyword = request.form['keyword']
 
-    app.logger.info('disp_count: {}'.format(disp_count))
+    app.logger.info('max_nodes: {}'.format(max_nodes))
     app.logger.info('keyword: {}'.format(keyword))
 
+    if keyword == '':
+        return make_response(jsonify({"error": "キーワードを入力してください。"}))
+
+    # wikipediaから記事全文を取得
     res_code, res_body = get_full_article(keyword)
 
     if res_code != 200:
@@ -58,8 +65,8 @@ def search():
     # 重みの昇順に並び替え
     word_count_dict = sort_dict(word_count_dict)
 
-    # disp_countでフィルタリング
-    word_count_dict = filter_by_disp_count(word_count_dict, disp_count)
+    # max_nodesでフィルタリング
+    word_count_dict = filter_by_disp_count(word_count_dict, max_nodes)
 
     # リンク文字列の記事の基本情報を取得する
     res_code, res_body = get_article_info(word_count_dict.keys())
@@ -75,7 +82,35 @@ def search():
     word_size_dict = normalize(word_size_dict)
 
     # チャート描画用のデータを生成する
-    chart_data = build_chart_data(keyword, word_count_dict, word_size_dict)
+    chart_data = build_link_chart_data(keyword, word_count_dict, word_size_dict)
+
+    app.logger.info('--- End [display_link] ---')
+
+    return make_response(jsonify(chart_data))
+
+
+@app.route('/category', methods=['POST'])
+def display_category():
+    """
+    カテゴリツリー表示（ajax呼び出し想定）
+    :return: チャート表示用jsonデータ
+    """
+
+    app.logger.info('--- Start [display_category] ---')
+
+    keyword = request.form['keyword']
+
+    # wikipediaのカテゴリを取得
+    res_code, res_body = get_categories(keyword)
+
+    if res_code != 200:
+        app.logger.error("APIレスポンスコード: {}".format(res_code))
+        return make_response(jsonify({"error": "システムエラー発生しました。"}))
+
+    app.logger.info('--- End [display_category] ---')
+
+    categories = get_category_list(res_body)
+    chart_data = build_category_chart_data(keyword, categories)
 
     return make_response(jsonify(chart_data))
 
@@ -176,7 +211,7 @@ def get_content(res_body):
         content = page_body['revisions'][0]['*']
         return content
     else:
-        None
+        return None
 
 
 def get_word_list(content):
@@ -190,9 +225,9 @@ def get_word_list(content):
     return [x.strip('[[').strip(']]') for x in matched]
 
 
-def build_chart_data(key_word, word_count_dict, word_size_dict):
+def build_link_chart_data(key_word, word_count_dict, word_size_dict):
     """
-    チャート表示用のデータを生成する
+    リンクノードチャート表示用のデータを生成する
     :param key_word: 検索ワード
     :param word_count_dict: リンク文字列と出現回数のディクショナリ
     :param word_size_dict: リンク文字列と記事サイズのディクショナリ
@@ -268,6 +303,91 @@ def filter_by_disp_count(word_weight_dict, disp_count):
         if i >= disp_count:
             break
     return filtered_word_weight_dict
+
+
+def get_categories(keyword):
+    """
+        wikipediaのカテゴリを取得する
+        :param keyword: 検索ワード
+        :return: APIレスポンス
+        """
+    url_params = {
+        "format": "json",
+        "action": "query",
+        "prop": "categories",
+        "titles": keyword
+    }
+
+    app.logger.debug("base_url: {}".format(BASE_URL))
+    app.logger.debug("url_params: {}".format(url_params))
+
+    res = requests.get(BASE_URL, params=url_params)
+    res_code = res.status_code
+    res_body = json.loads(res.text)
+
+    app.logger.debug("res_code: {}".format(res_code))
+    app.logger.debug("res_body: {}".format(res_body))
+
+    return res_code, res_body
+
+
+def get_category_list(res_body):
+    """
+    APIレスポンスボディからカテゴリリストを取得する
+    :param res_body: APIレスポンスボディ
+    :return: 本文
+    """
+    page = list(res_body['query']['pages'].values())[0]
+    categories_node = page['categories']
+    categories = [x['title'].strip('Category:') for x in categories_node]
+
+    # 削除対象のカテゴリ（完全一致）
+    del_categories = [
+        'ISBNマジックリンクを使用しているページ',
+        'Webarchiveテンプレートのウェイバックリンク',
+        'リンクのみの節がある記事',
+        '告知事項があるページ',
+        '曖昧さ回避の必要なリンクのあるページ',
+        '改名提案'
+    ]
+
+    # 削除対象のカテゴリ（部分一致）
+    del_partial_categories = [
+        '出典を必要とする記事',
+        '出典を必要とする記述のある記事',
+        '日本語版記事がリダイレクトの仮リンクを含む記事',
+        '国際化が求められている項目',
+        '外部リンクがリンク切れになっている記事',
+        '独自研究の除去が必要な節のある記事',
+        '識別子が指定されている記事',
+        'マイクロフォーマットがある記事',
+        '独自研究の除去が必要な記事'
+    ]
+
+    # 部分一致カテゴリの完全一致名を調べる
+    for category in categories:
+        for del_partial_category in del_partial_categories:
+            if category.find(del_partial_category) >= 0:
+                del_categories.append(category)
+
+    # 削除対象のカテゴリを取り除く
+    for del_category in del_categories:
+        if del_category in categories:
+            categories.remove(del_category)
+
+    return categories
+
+
+def build_category_chart_data(keyword, categories):
+    """
+    カテゴリツリーチャート表示用のデータを生成する
+    :param keyword:
+    :param categories:
+    :return:
+    """
+    children = [{'name': x} for x in categories]
+    chart_data = {'name': keyword, 'children': children}
+    return chart_data
 
 
 if __name__ == '__main__':
