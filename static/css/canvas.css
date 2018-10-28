@@ -33,3 +33,26 @@
     stroke: #555;
     fill: none;
 }
+
+.tree_node_d0 {
+    stroke: #fff;
+    fill: #f55;
+}
+
+.tree_node_d1 {
+    stroke: #fff;
+    fill: #55f;
+}
+
+.tree_text_d0 {
+    font-weight: bold;
+}
+
+.tree_text_d1 {
+    font-weight: bold;
+}
+
+.tree_text_d2 {
+    font-weight: normal;
+    font-size: 0.5em;
+}

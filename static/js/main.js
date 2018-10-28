@@ -4,6 +4,7 @@
 $(function() {
     /* リンクノードの表示ボタン押下時 */
     $("#btn_link").click(function(){
+        inactivate();
         reset();
         $.post("link",
             {
@@ -18,6 +19,7 @@ $(function() {
 
     /* カテゴリツリーの表示ボタン押下時 */
     $("#btn_category").click(function(){
+        inactivate();
         reset();
         $.post("category",
             {
@@ -31,7 +33,7 @@ $(function() {
 });
 
 /***********************
- * 初期化関数
+ * ユーティリティ
  ***********************/
 function reset() {
     $('#canvas_link').empty();
@@ -40,12 +42,24 @@ function reset() {
     $('#msg_category').empty();
 }
 
+function activate() {
+    $("#btn_link").prop("disabled", false);
+    $("#btn_category").prop("disabled", false);
+}
+
+function inactivate() {
+    $("#btn_link").prop("disabled", true);
+    $("#btn_category").prop("disabled", true);
+}
+
+
 /***************************
  * リンクノードの描画
  ***************************/
 function display_link(graph) {
     if(graph.error) {
         $('#msg_link').text(graph.error);
+        activate();
         return;
     }
 
@@ -139,6 +153,8 @@ function display_link(graph) {
         d.fy = null;
     }
 
+    activate()
+
 }
 
 /***************************
@@ -147,6 +163,7 @@ function display_link(graph) {
 function display_category(data) {
     if(data.error) {
         $('#msg_category').text(graph.error);
+        activate();
         return;
     }
 
@@ -156,12 +173,12 @@ function display_category(data) {
     var root = d3.hierarchy(data);
 
     var tree = d3.tree()
-        .size([400,400]) // .size()でツリー全体のサイズを決める。
+        .size([height, width * 0.5]) // .size()でツリー全体のサイズを決める。
 
     tree(root);
 
     // 4. svg要素の配置
-    var g = d3.select("#canvas_category").append("g").attr("transform", "translate(80,0)");
+    var g = d3.select("#canvas_category").append("g").attr("transform", "translate(120,0)");
     var link = g.selectAll(".tree_link")
         .data(root.descendants().slice(1))
         .enter()
@@ -179,14 +196,20 @@ function display_category(data) {
         .enter()
         .append("g")
         .attr("class", "tree_node")
-        .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; })
+        .attr("transform", function(d) { return "translate(" + d.y + "," + d.x + ")"; });
 
     node.append("circle")
         .attr("r", 8)
-        .attr("fill", "#999");
+        .attr("fill", "#999")
+        .attr("class", function(d) { return "tree_node_d" + d.depth; });
 
     node.append("a")
-        .attr("xlink:href", function (d) { return "https://ja.wikipedia.org/wiki/Category:" + d.data.name; })
+        .attr("xlink:href", function (d) {
+            if (d.depth == 1) {
+                return "https://ja.wikipedia.org/wiki/Category:" + d.data.name;
+             } else {
+                return "https://ja.wikipedia.org/wiki/" + d.data.name;
+             }})
         .attr("target", "_blank")
         .attr("class", "tree_a")
 
@@ -194,6 +217,9 @@ function display_category(data) {
         .append("text")
         .attr("dy", 3)
         .attr("x", function(d) { return d.children ? -12 : 12; })
+        .attr("class", function(d) { return "tree_text tree_text_d" + d.depth; })
         .style("text-anchor", function(d) { return d.children ? "end" : "start"; })
         .text(function(d) { return d.data.name; });
+
+    activate()
 }

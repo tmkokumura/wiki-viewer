@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, request, url_for, jsonify, make_response
+from flask import Flask, render_template, request, jsonify, make_response
 import requests
 import json
 import re
@@ -109,9 +109,9 @@ def display_category():
 
     categories = get_category_list(res_body)
 
-    res_code, res_body = get_category_members(categories)
+    category_member_dict = get_category_members(categories)
 
-    chart_data = build_category_chart_data(keyword, categories)
+    chart_data = build_category_chart_data(keyword, category_member_dict)
 
     app.logger.info('--- End [display_category] ---')
 
@@ -180,6 +180,7 @@ def format_titles(word_list):
         titles += '|'
 
     return titles.rstrip('|')
+
 
 def get_content(res_body):
     """
@@ -351,15 +352,19 @@ def get_category_list(res_body):
     return categories
 
 
-def build_category_chart_data(keyword, categories):
+def build_category_chart_data(keyword, category_article_dict):
     """
     カテゴリツリーチャート表示用のデータを生成する
-    :param keyword:
-    :param categories:
+    :param keyword: 検索キーワード
+    :param category_article_dict: カテゴリと記事一覧のディクショナリ
     :return:
     """
-    children = [{'name': x} for x in categories]
-    chart_data = {'name': keyword, 'children': children}
+    categories = []
+    for category, articles in category_article_dict.items():
+        category_articles = [{"name": x} for x in articles]
+        categories.append({"name": category, "children": category_articles})
+    chart_data = {'name': keyword, "children": categories}
+
     return chart_data
 
 
@@ -369,28 +374,34 @@ def get_category_members(categories):
     :param categories:
     :return:
     """
-    category_strs = ['Category:' + x for x in categories]
-    query_cateogries = format_titles(category_strs)
 
     url_params = {
         "format": "json",
         "action": "query",
-        "list": "categorymembers",
-        "cmtitle": query_cateogries
+        "list": "categorymembers"
     }
 
-    return execute_api(url_params)
+    category_member_dict = {}
+    for category in categories:
+        url_params["cmtitle"] = "Category:" + category
+        res_code, res_body = execute_api(url_params)
+
+        articles = get_category_member_dict(res_body)
+        category_member_dict[category] = articles
+
+    return category_member_dict
 
 
 def get_category_member_dict(res_body):
     """
-    APIレスポンスボディからカテゴリ記事ディクショナリを取得する
+    APIレスポンスボディからカテゴリ記事リストを取得する
     :param res_body: APIレスポンスボディ
     :return: 本文
     """
-    page = list(res_body['query']['pages'].values())[0]
-    categories_node = page['categories']
-    categories = [x['title'].strip('Category:') for x in categories_node]
+    categorymembers_node = list(res_body['query']['categorymembers'])
+    articles = [x['title'] for x in categorymembers_node if x['ns'] == 0]
+
+    return articles
 
 
 def execute_api(url_params):
