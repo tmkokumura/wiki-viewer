@@ -2,181 +2,45 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <script src="//code.jquery.com/jquery-1.11.0.min.js"></script>
-    <script src="//d3js.org/d3.v4.min.js"></script>
-    <script type="text/javascript">
-        $(function() {
-            $("#search_button").click(function(){
-                reset();
-                $.post("search",
-                    {
-                        "disp_count": $('#disp_count').val(),
-                        "keyword": $('#keyword').val()
-                    },
-                    function(j_data){
-                        view(j_data);
-                    }
-                );
-            });
-        });
-
-        function reset() {
-            $('svg').empty();
-            $('#msg').empty();
-        }
-
-        function view(graph) {
-            if(graph.error) {
-                $('#msg').text(graph.error);
-                exit();
-            }
-
-            var width = 800;
-            var height = 600;
-
-            var svg = d3.select("svg")
-                .attr("width", width)
-                .attr("height", height);
-
-            var simulation = d3.forceSimulation()
-                .force("link", d3.forceLink()
-                    .id(function(d) { return d.id; })
-                    .distance(function(d) { return d.distance * 150 + 50; }))
-                .force("charge", d3.forceManyBody())
-                .force("center", d3.forceCenter(width / 2, height / 2));
-
-
-            var link = svg.append("g")
-                .attr("class", "links")
-                .selectAll("line")
-                .data(graph.links)
-                .enter().append("line");
-
-            d3.selectAll("line")
-                .attr("class", "link")
-
-            var node = svg.append("g")
-                .attr("class", "nodes")
-                .selectAll("circle")
-                .data(graph.nodes)
-                .enter().append("circle")
-                    .attr("r", function(d){return d.size * 20 + 10})
-                    .call(d3.drag()
-                        .on("start", dragstarted)
-                        .on("drag", dragged)
-                        .on("end", dragended));
-
-            var labels = svg.append("g")
-                .selectAll("text")
-                .data(graph.nodes)
-                .enter()
-                .append("a")
-                    .attr("xlink:href", function (d) { return "https://ja.wikipedia.org/wiki/" + d.id; })
-                    .attr("target", "_blank")
-                .append("text")
-                    .text(function(d){return d.id;})
-                    .attr("class", "node-label");
-
-            d3.selectAll("circle")
-                .attr("class", "node");
-
-            d3.select("circle")
-                .attr("class", "node main");
-
-            simulation
-                .nodes(graph.nodes)
-                .on("tick", ticked);
-
-            simulation.force("link")
-                .links(graph.links);
-
-            function ticked() {
-                link
-                    .attr("x1", function(d) { return d.source.x; })
-                    .attr("y1", function(d) { return d.source.y; })
-                    .attr("x2", function(d) { return d.target.x; })
-                    .attr("y2", function(d) { return d.target.y; });
-
-                node
-                    .attr("cx", function(d) { return d.x; })
-                    .attr("cy", function(d) { return d.y; });
-
-                labels
-                    .attr("x", function(d){return d.x;})
-                    .attr("y", function(d){return d.y;});
-            }
-
-            function dragstarted(d) {
-                if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-                d.fx = d.x;
-                d.fy = d.y;
-            }
-
-            function dragged(d) {
-                d.fx = d3.event.x;
-                d.fy = d3.event.y;
-            }
-
-            function dragended(d) {
-                if (!d3.event.active) simulation.alphaTarget(0);
-                d.fx = null;
-                d.fy = null;
-            }
-        }
-    </script>
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Cache-Control" content="no-cache">
     <title>Wiki Search</title>
-    <style>
-        body {
-            padding: 0px 20px;
-        }
-
-        .canvas {
-            width: 800px;
-            height: 600px;
-            margin-top: 10px;
-            background-color: #eee;
-            border: solid #aaa
-        }
-
-        .link {
-            stroke: #555;
-        }
-
-        .node {
-            stroke: #fff;
-            fill: #55f;
-            z-index: 1;
-        }
-
-        .node-label {
-            font-weight: bold;
-        }
-
-        .main {
-            fill: #f55;
-            z-index: 2;
-        }
-
-        .disp_count {
-            width: 3em;
-        }
-
-        .msg {
-            color: #f00;
-        }
-    </style>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/style.css">
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="//stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="//d3js.org/d3.v4.min.js"></script>
+    <script type="text/javascript" src="/static/js/main.js"></script>
 </head>
 <body>
     <h1>ウィキ ノード</h1>
-    <p>
-        表示するノードの数: <input type="number" class="disp_count" id="disp_count" min="1" max="99" value="25">
-    </p>
-    <p>
-        <input type="text" id="keyword" size="30" placeholder="検索ワード">
-        <input type="button" id="search_button" value="Search">
-    </p>
-    <p class="msg" id="msg"></p>
-    <svg class="canvas" xmlns="http://www.w3.org/2000/svg"></svg>
 
+    <!-- タブボタン -->
+    <ul class="nav nav-tabs">
+        <li class="nav-item">
+            <a href="#tab1" class="nav-link" data-toggle="tab">リンクされた単語をみる</a>
+        </li>
+        <li class="nav-item">
+            <a href="#tab2" class="nav-link" data-toggle="tab">カテゴリをみる</a>
+        </li>
+    </ul>
+
+    <!-- タブコンテンツ -->
+    <div class="tab-content">
+        <!-- ノードエリア -->
+        <div id="tab1" class="tab-pane active">
+            <p>
+                表示するノードの数: <input type="number" class="disp_count" id="disp_count" min="1" max="99" value="25">
+            </p>
+            <p>
+                <input type="text" id="keyword" size="30" placeholder="検索ワード">
+                <input type="button" id="search_button" value="Search">
+            </p>
+            <p class="msg" id="msg"></p>
+            <svg class="canvas" xmlns="http://www.w3.org/2000/svg"></svg>
+        </div>
+        <div id="tab2" class="tab-pane active">
+        </div>
+    </div>
 </body>
 </html>

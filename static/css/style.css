@@ -1,0 +1,42 @@
+body {
+    padding: 0px 20px;
+}
+
+.nav-tabs {
+    margin: 20px 0px;
+}
+
+.canvas {
+    width: 800px;
+    height: 600px;
+    margin-top: 10px;
+    background-color: #eee;
+    border: solid #aaa
+}
+
+.link {
+    stroke: #555;
+}
+
+.node {
+    stroke: #fff;
+    fill: #55f;
+    z-index: 1;
+}
+
+.node-label {
+    font-weight: bold;
+}
+
+.main {
+    fill: #f55;
+    z-index: 2;
+}
+
+.disp_count {
+    width: 3em;
+}
+
+.msg {
+    color: #f00;
+}
