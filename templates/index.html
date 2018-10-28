@@ -15,10 +15,16 @@
 <body>
     <h1>ウィキ ノード</h1>
 
-    <!-- タブボタン -->
+    <!-- 検索エリア -->
+    <div class="search">
+        <input type="text" id="keyword" class="search_text ef" size="30" placeholder="キーワード">
+        <input type="button" id="search_button" class="search_btn" value="表示">
+    </div>
+
+    <!-- タブエリア -->
     <ul class="nav nav-tabs">
         <li class="nav-item">
-            <a href="#tab1" class="nav-link" data-toggle="tab">リンクされた単語をみる</a>
+            <a href="#tab1" class="nav-link active" data-toggle="tab">リンクされた単語をみる</a>
         </li>
         <li class="nav-item">
             <a href="#tab2" class="nav-link" data-toggle="tab">カテゴリをみる</a>
@@ -29,14 +35,10 @@
     <div class="tab-content">
         <!-- ノードエリア -->
         <div id="tab1" class="tab-pane active">
-            <p>
+            <div>
                 表示するノードの数: <input type="number" class="disp_count" id="disp_count" min="1" max="99" value="25">
-            </p>
-            <p>
-                <input type="text" id="keyword" size="30" placeholder="検索ワード">
-                <input type="button" id="search_button" value="Search">
-            </p>
-            <p class="msg" id="msg"></p>
+            </div>
+            <div class="msg" id="msg"></div>
             <svg class="canvas" xmlns="http://www.w3.org/2000/svg"></svg>
         </div>
         <div id="tab2" class="tab-pane active">
