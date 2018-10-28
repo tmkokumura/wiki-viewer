@@ -1,0 +1,27 @@
+.canvas {
+    width: 70%;
+    height: 100%;
+    background-color: #eee;
+    border: 1px solid #aaa;
+    display: inline-block;
+    box-sizing: border-box;
+}
+
+.link {
+    stroke: #555;
+}
+
+.node {
+    stroke: #fff;
+    fill: #55f;
+    z-index: 1;
+}
+
+.node-label {
+    font-weight: bold;
+}
+
+.main {
+    fill: #f55;
+    z-index: 2;
+}

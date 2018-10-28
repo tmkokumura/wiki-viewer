@@ -1,0 +1,14 @@
+header {
+    height: 30px;
+    background-color: #67c5ff;
+    position: relative;
+    border-bottom: 1px solid #aaa;
+    box-sizing: border-box;
+}
+
+header h1{
+    padding: 0px 40px;
+    font-size: 1.0em;
+    position: absolute;
+	bottom: 0;
+}

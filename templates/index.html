@@ -6,43 +6,50 @@
     <meta http-equiv="Cache-Control" content="no-cache">
     <title>Wiki Search</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="stylesheet" href="/static/css/header.css">
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/canvas.css">
+    <link rel="stylesheet" href="/static/css/search.css">
     <script type="text/javascript" src="//code.jquery.com/jquery-1.11.0.min.js"></script>
     <script type="text/javascript" src="//stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="//d3js.org/d3.v4.min.js"></script>
     <script type="text/javascript" src="/static/js/main.js"></script>
 </head>
 <body>
-    <h1>ウィキ ノード</h1>
+    <header>
+        <h1>Wiki Viewer</h1>
+    </header>
+    <main>
+        <!-- タブエリア -->
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a href="#tab1" class="nav-link active" data-toggle="tab">リンクされた単語をみる</a>
+            </li>
+            <li class="nav-item">
+                <a href="#tab2" class="nav-link" data-toggle="tab">カテゴリをみる</a>
+            </li>
+        </ul>
 
-    <!-- 検索エリア -->
-    <div class="search">
-        <input type="text" id="keyword" class="search_text ef" size="30" placeholder="キーワード">
-        <input type="button" id="search_button" class="search_btn" value="表示">
-    </div>
-
-    <!-- タブエリア -->
-    <ul class="nav nav-tabs">
-        <li class="nav-item">
-            <a href="#tab1" class="nav-link active" data-toggle="tab">リンクされた単語をみる</a>
-        </li>
-        <li class="nav-item">
-            <a href="#tab2" class="nav-link" data-toggle="tab">カテゴリをみる</a>
-        </li>
-    </ul>
-
-    <!-- タブコンテンツ -->
-    <div class="tab-content">
-        <!-- ノードエリア -->
-        <div id="tab1" class="tab-pane active">
-            <div>
-                表示するノードの数: <input type="number" class="disp_count" id="disp_count" min="1" max="99" value="25">
+        <!-- タブコンテンツ -->
+        <div class="tab-content">
+            <!-- ノードタブ -->
+            <div id="tab1" class="tab-pane active">
+                <!-- 描画エリア -->
+                <svg class="canvas" xmlns="http://www.w3.org/2000/svg"></svg>
+                <!-- 検索エリア -->
+                <div class="search">
+                    <input type="text" id="keyword" class="search_item search_text" size="30" placeholder="キーワード">
+                    <div class="search_item">
+                        <label for="disp_count">ノードの数</label>
+                        <input type="number" class="search_text search_count" id="disp_count" min="1" max="99" value="25">
+                    </div>
+                    <input type="button" id="search_button" class="search_item search_btn" value="表 示">
+                    <div class="msg" id="msg"></div>
+                </div>
             </div>
-            <div class="msg" id="msg"></div>
-            <svg class="canvas" xmlns="http://www.w3.org/2000/svg"></svg>
+            <div id="tab2" class="tab-pane">
+            </div>
         </div>
-        <div id="tab2" class="tab-pane active">
-        </div>
-    </div>
+    </main>
 </body>
 </html>

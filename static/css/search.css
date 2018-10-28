@@ -1,0 +1,50 @@
+.search {
+    display: inline-block;
+    width: 29%;
+    padding-left: 2em;
+    vertical-align: top;
+}
+
+.search_item {
+    display: block;
+	width: 100%;
+	box-sizing: border-box;
+	margin-bottom: 1em;
+}
+
+.search_text{
+    padding: 0.3em;
+	transition: 0.3s;
+	letter-spacing: 1px;
+	border: 1px solid #aaa;
+	border-radius: 4px;
+	color: #495057;
+}
+
+.search_text:focus {
+	border: 1px solid #da3c41;
+	outline: none;
+	box-shadow: 0 0 5px 1px rgba(218,60,65, .5);
+}
+
+/* ノードの数 */
+.search_count {
+    width: 4em;
+    text-align: right;
+}
+
+/* 表示ボタン */
+.search_btn {
+    padding: 0.3em 1em;
+    color: #67c5ff;
+    border: solid 2px #67c5ff;
+    border-radius: 3px;
+    transition: .3s;
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+.search_btn:hover {
+    background: #67c5ff;
+    color: white;
+}
