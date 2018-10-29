@@ -163,7 +163,8 @@ def get_word_size(res_body):
 
     article_size_dict = {}
     for page in page_list:
-        article_size_dict[page["title"]] = page["length"]
+        if 'title' in page.keys() and 'length' in page.keys():
+            article_size_dict[page["title"]] = page["length"]
 
     return article_size_dict
 
@@ -255,7 +256,10 @@ def normalize(word_dict):
 
     norm_word_dict = {}
     for word, weight in word_dict.items():
-        norm_word_dict[word] = float(weight - weight_min) / (weight_max - weight_min)
+        if(weight_max - weight_min) != 0:
+            norm_word_dict[word] = float(weight - weight_min) / (weight_max - weight_min)
+        else:
+            norm_word_dict[word] = 1
 
     return norm_word_dict
 
