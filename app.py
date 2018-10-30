@@ -31,14 +31,28 @@ def display_link():
 
     app.logger.info('--- Start [display_link] ---')
 
-    max_nodes = int(request.form['max-nodes'])
+    max_nodes = request.form['max-nodes']
     keyword = request.form['keyword']
 
     app.logger.info('max_nodes: {}'.format(max_nodes))
     app.logger.info('keyword: {}'.format(keyword))
 
+    # 必須チェック
     if keyword == '':
         return make_response(jsonify({"error": "キーワードを入力してください。"}))
+
+    if max_nodes == '':
+        return make_response(jsonify({"error": "ノードの数を入力してください。"}))
+
+    # 型チェック
+    if not max_nodes.isdecimal():
+        return make_response(jsonify({"error": "ノードの数は1～40を入力してください。"}))
+
+    max_nodes = int(max_nodes)
+
+    # 数値範囲チェック
+    if max_nodes <= 0 or max_nodes >= 41:
+        return make_response(jsonify({"error": "ノードの数は1～40を入力してください。"}))
 
     # wikipediaから記事全文を取得
     res_code, res_body = get_full_article(keyword)
