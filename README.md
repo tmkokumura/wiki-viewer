@@ -4,9 +4,9 @@ You can see relationships of articles of wikipedia by graph.
 This app dinamically gets wikipedia articles, so the graph is completele up to date.
 
 # How to Use
-## Git checkout
+## Git clone
 ```
-git checkout git@github.com:tmkokumura/wiki-viewer.git
+git clone git@github.com:tmkokumura/wiki-viewer.git
 ```
 
 ## Install depending modules
